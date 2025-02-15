@@ -6,11 +6,11 @@ description: "验证安装程序基本功能"
 install:
   # 环境配置
   environments:
-    github:
+    base:
       pip_index: "https://pypi.org/simple"
       pip_timeout: 60
       pip_retries: 3
-      base_dir: "/workspaces"
+      base_dir: "/workspace"
       python_cmd: "python"
       use_sudo: false
     ubuntu-a:
