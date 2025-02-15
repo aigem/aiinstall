@@ -14,8 +14,8 @@
 
 1. 克隆仓库：
    ```bash
-   git clone <repository_url>
-   cd ai-installer
+   git clone https://github.com/aigem/aiinstall.git
+   cd aiinstall
    ```
 
 2. 安装依赖：

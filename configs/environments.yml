@@ -16,6 +16,11 @@ environments:
     use_sudo: false
     env_vars:
       PYTHONPATH: "{base_dir}/src"
+    
+  github: &github
+    <<: *env-base
+    base_dir: "/workspace"
+    use_sudo: false
 
   # sudo环境
   ubuntu-b: &ubuntu-b
