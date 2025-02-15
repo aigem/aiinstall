@@ -3,40 +3,46 @@ version: "1.0"
 name: "{name}"
 description: "{description}"
 
-# 使用预设环境配置
-environment: "ubuntu-a"  # 可选: ubuntu-a, ubuntu-b, ubuntu-a-cn, ubuntu-b-cn
+install:
+  # 环境配置
+  environments:
+    ubuntu-a:
+      base_dir: "/home/{user}/ai_apps/{name}"
+      python_cmd: "python3"
+      use_sudo: false
+      pip_index: "https://pypi.org/simple"
+      pip_timeout: 60
+      pip_retries: 3
+    github:
+      base_dir: "/workspace"
+      python_cmd: "python"
+      use_sudo: false
+      pip_index: "https://pypi.org/simple"
+      pip_timeout: 60
+      pip_retries: 3
 
 # 安装步骤
 steps:
-  # 步骤1: 环境准备
-  - name: "prepare"
-    description: "准备Python虚拟环境"
-    common:
-      - "mkdir -p {base_dir}"
-      - "cd {base_dir}"
-      - "{python_cmd} -m venv {venv_dir}"
-      - "{venv_pip} install --upgrade pip -i {pip_index}"
-
-  # 步骤2: 下载源码
+  # 步骤1: 下载源码
   - name: "download"
     description: "下载应用源码"
     common:
-      - "git clone {repo_url} src"
-      - "cd src && git checkout {version}"
+      - "git clone {repo_url} {base_dir}"
+      - "cd {base_dir}"
+      - "git checkout {version}"
 
-  # 步骤3: 安装依赖
+  # 步骤2: 安装依赖
   - name: "install"
     description: "安装应用依赖"
     common:
-      - "{venv_pip} install -r src/requirements.txt -i {pip_index}"
-      # 添加其他依赖安装命令
+      - "{python_cmd} -m pip install -r requirements.txt"
 
-  # 步骤4: 配置应用
+  # 步骤3: 配置应用
   - name: "configure"
     description: "配置应用"
     common:
-      # 添加配置命令
-      - "cp src/config.example.yml src/config.yml"
+      - "mkdir -p {base_dir}/data"
+      - "mkdir -p {base_dir}/logs"
 
 # 启动配置
 startup:
