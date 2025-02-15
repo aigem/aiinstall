@@ -1,0 +1,2 @@
+# aiinstall
+ai tools install
