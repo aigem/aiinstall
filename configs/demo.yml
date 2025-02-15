@@ -4,7 +4,7 @@ name: "test-app"
 description: "验证安装程序基本功能"
 
 # 使用预设环境
-environment: "ubuntu-a"  # 指定使用的环境配置
+environment: "github"  # 指定使用的环境配置
 
 # 安装步骤
 steps:
