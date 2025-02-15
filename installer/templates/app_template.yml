@@ -1,0 +1,60 @@
+# {name} 安装配置
+version: "1.0"
+name: "{name}"
+description: "{description}"
+
+# 使用预设环境配置
+environment: "ubuntu-a"  # 可选: ubuntu-a, ubuntu-b, ubuntu-a-cn, ubuntu-b-cn
+
+# 安装步骤
+steps:
+  # 步骤1: 环境准备
+  - name: "prepare"
+    description: "准备Python虚拟环境"
+    common:
+      - "mkdir -p {base_dir}"
+      - "cd {base_dir}"
+      - "{python_cmd} -m venv {venv_dir}"
+      - "{venv_pip} install --upgrade pip -i {pip_index}"
+
+  # 步骤2: 下载源码
+  - name: "download"
+    description: "下载应用源码"
+    common:
+      - "git clone {repo_url} src"
+      - "cd src && git checkout {version}"
+
+  # 步骤3: 安装依赖
+  - name: "install"
+    description: "安装应用依赖"
+    common:
+      - "{venv_pip} install -r src/requirements.txt -i {pip_index}"
+      # 添加其他依赖安装命令
+
+  # 步骤4: 配置应用
+  - name: "configure"
+    description: "配置应用"
+    common:
+      # 添加配置命令
+      - "cp src/config.example.yml src/config.yml"
+
+# 启动配置
+startup:
+  description: "应用启动说明"
+  port: 8188  # 可选：应用端口号
+  commands:
+    - "cd {base_dir}"
+    - "source {venv_dir}/bin/activate"
+    - "python src/main.py --port {port}"
+
+  post_install_message: |
+    {name} 安装完成！
+    
+    启动方式：
+    1. 进入安装目录: cd {base_dir}
+    2. 激活环境: source {venv_dir}/bin/activate
+    3. 启动程序: python src/main.py --port {port}
+    
+    访问地址: http://localhost:{port}
+    
+    如需帮助，请参考文档：{docs_url} 
