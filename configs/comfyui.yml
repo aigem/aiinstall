@@ -1,0 +1,55 @@
+# ComfyUI 安装配置
+version: "1.0"
+name: "comfyui"
+description: "ComfyUI - 强大的 Stable Diffusion 图形界面工具"
+
+install:
+  environments:
+    ubuntu-a:
+      base_dir: "/home/{user}/ai_apps/{name}"
+      python_cmd: "python3"
+      use_sudo: false
+      pip_index: "https://pypi.org/simple"
+      pip_timeout: 60
+      pip_retries: 3
+    github:
+      base_dir: "/workspace"
+      python_cmd: "python"
+      use_sudo: false
+      pip_index: "https://pypi.org/simple"
+      pip_timeout: 60
+      pip_retries: 3
+
+  steps:
+    - name: "clone-repo"
+      description: "克隆 ComfyUI 代码仓库"
+      common:
+        - "git clone https://github.com/comfyanonymous/ComfyUI.git {base_dir}"
+        - "cd {base_dir}"
+
+    - name: "install-deps"
+      description: "安装 Python 依赖"
+      common:
+        - "{python_cmd} -m pip install --upgrade pip"
+        - "{python_cmd} -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121"
+        - "{python_cmd} -m pip install -r requirements.txt"
+
+    - name: "create-dirs"
+      description: "创建必要的目录"
+      common:
+        - "mkdir -p {base_dir}/models/checkpoints"
+        - "mkdir -p {base_dir}/models/vae"
+        - "mkdir -p {base_dir}/models/loras"
+        - "mkdir -p {base_dir}/models/controlnet"
+
+startup:
+  post_install_message: |
+    ComfyUI 安装完成！
+
+    启动方式：
+    1. 进入安装目录：cd {base_dir}
+    2. 运行服务：{python_cmd} main.py
+
+    默认访问地址：http://localhost:8188
+
+    注意：首次使用前请下载模型文件到 models/checkpoints 目录 

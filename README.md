@@ -20,6 +20,7 @@
 
 2. 安装依赖：
    ```bash
+   bash startup.sh
    pip install -r requirements.txt
    ```
 
@@ -33,13 +34,17 @@
    ```
 
 2. 使用预设环境安装应用：
+查找 configs 目录下的配置文件，使用预设环境安装应用：
    ```bash
+   # 安装comfyui 使用ubuntu-a环境
    python -m installer install comfyui --env ubuntu-a
+
    ```
 
 3. 使用自定义配置文件：
    ```bash
-   python -m installer install --config my_config.yml --env ubuntu-b
+   # 安装指定配置文件 使用github环境
+   python -m installer install --config configs/demo.yml -e github
    ```
 
 4. 验证配置文件：
