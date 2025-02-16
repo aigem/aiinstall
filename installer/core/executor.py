@@ -19,17 +19,19 @@ class CommandExecutor:
         self.logger = logging.getLogger('command')
         
     def execute(self, command: str, env: Dict[str, str] = None) -> str:
-        """执行单个命令"""
+        """执行单个命令（支持多行）"""
         self.logger.info(f"执行命令: {command}")
         
         try:
+            # 使用子shell执行多行命令
             result = subprocess.run(
                 command,
                 shell=True,
                 cwd=self.working_dir,
                 env=env,
                 text=True,
-                capture_output=True
+                capture_output=True,
+                executable='/bin/bash'  # 明确指定使用bash以支持多行命令
             )
             
             if result.returncode != 0:

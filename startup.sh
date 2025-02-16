@@ -4,6 +4,7 @@
 check_root() {
     if [ "$EUID" -ne 0 ]; then
         echo "请使用 root 权限运行此脚本"
+        echo "sudo bash startup.sh"
         exit 1
     fi
 }
@@ -116,6 +117,14 @@ install_requirements() {
     else
         echo "未找到 requirements.txt 文件"
     fi
+}
+
+# 提示说明
+info() {
+    echo "================================================"
+    echo "请查看【说明文件】进行下一步的安装"
+    echo "最新的相关说明及命令请查看：https://fuliai-ai2u.hf.space/"
+    echo "================================================"
 }
 
 # 主函数

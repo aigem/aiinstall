@@ -1,55 +1,66 @@
-# ComfyUI 安装配置
 version: "1.0"
 name: "comfyui"
-description: "ComfyUI - 强大的 Stable Diffusion 图形界面工具"
-
+description: "免费算力平台安装comfyui"
 install:
   environments:
-    ubuntu-a:
-      base_dir: "/home/{user}/ai_apps/{name}"
-      python_cmd: "python3"
-      use_sudo: false
-      pip_index: "https://pypi.org/simple"
-      pip_timeout: 60
+    base:
+      pip_index: "https://pypi.tuna.tsinghua.edu.cn/simple"
+      pip_timeout: 300
       pip_retries: 3
-    github:
       base_dir: "/workspace"
       python_cmd: "python"
       use_sudo: false
-      pip_index: "https://pypi.org/simple"
-      pip_timeout: 60
-      pip_retries: 3
-
+      env_vars: {}
+      packages: []
+      system_packages: []
+      venv_dir: "venv_confyui"
+      app_repo: "https://openi.pcl.ac.cn/niubi/ComfyUI.git"
+      python_ver: "3.12.9"
+      repo_name: "ComfyUI"
   steps:
-    - name: "clone-repo"
-      description: "克隆 ComfyUI 代码仓库"
+    - name: "安装前准备"
+      description: "系统依赖"
       common:
-        - "git clone https://github.com/comfyanonymous/ComfyUI.git {base_dir}"
-        - "cd {base_dir}"
+        - |
+          apt-get update && \
+          apt install -y \
+            build-essential \
+            libgl1 \
+            ffmpeg \
+            python3-pip \
+            aria2 \
+            git \
+            git-lfs \
+            htop
 
-    - name: "install-deps"
-      description: "安装 Python 依赖"
+        - "pip install uv -i {pip_index}"
+
+    - name: "代码管理"
+      description: "获取应用程序代码"
       common:
-        - "{python_cmd} -m pip install --upgrade pip"
-        - "{python_cmd} -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121"
-        - "{python_cmd} -m pip install -r requirements.txt"
+        - |
+          cd {base_dir} && \
+          if [ -d "{repo_name}" ]; then
+            echo "更新仓库..." && \
+            cd {repo_name} && \
+            git pull
+          else
+            echo "克隆仓库..." && \
+            git clone {app_repo} {repo_name} && \
+            cd {repo_name}
+          fi
 
-    - name: "create-dirs"
-      description: "创建必要的目录"
+    - name: "虚拟环境"
+      description: "检测并创建虚拟环境"
       common:
-        - "mkdir -p {base_dir}/models/checkpoints"
-        - "mkdir -p {base_dir}/models/vae"
-        - "mkdir -p {base_dir}/models/loras"
-        - "mkdir -p {base_dir}/models/controlnet"
-
-startup:
-  post_install_message: |
-    ComfyUI 安装完成！
-
-    启动方式：
-    1. 进入安装目录：cd {base_dir}
-    2. 运行服务：{python_cmd} main.py
-
-    默认访问地址：http://localhost:8188
-
-    注意：首次使用前请下载模型文件到 models/checkpoints 目录 
+        - "uv venv {base_dir}/{venv_dir} --python={python_ver}"
+        - |
+          . {base_dir}/{venv_dir}/bin/activate && \
+          which python && \
+          uv pip install -U pip -i {pip_index} && \
+          uv pip install -U \
+            aria2 \
+            insightface \
+            "numpy<2.0" \
+            -i {pip_index} && \
+          uv pip install -r {base_dir}/{repo_name}/requirements.txt -i {pip_index}

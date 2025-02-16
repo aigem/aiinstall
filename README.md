@@ -12,16 +12,10 @@
 
 ## 安装
 
-1. 克隆仓库：
+克隆仓库及安装依赖：
    ```bash
    git clone https://github.com/aigem/aiinstall.git
    cd aiinstall && bash startup.sh
-   ```
-
-2. 安装依赖：
-   ```bash
-   bash startup.sh
-   pip install -r requirements.txt
    ```
 
 ## 使用方法

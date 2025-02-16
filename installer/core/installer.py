@@ -50,7 +50,10 @@ class Installer:
             'use_sudo': str(self.config.current_env['use_sudo']).lower(),
         }
         
-        # 添加环境变量
+        # 添加所有环境变量
+        variables.update(self.config.current_env)
+        
+        # 添加额外环境变量
         env_vars = self.config.current_env.get('env_vars', {})
         variables.update(env_vars)
         
