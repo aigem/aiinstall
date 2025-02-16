@@ -61,11 +61,16 @@ class Installer:
         
     def _execute_step(self, step: Dict[str, Any], variables: Dict[str, str]):
         """执行单个安装步骤"""
-        self.logger.info(f"步骤: {step['name']}")
+        # 步骤开始提示
+        self.logger.info(f"\n▶▶ 开始步骤: {step['name']}")
         if step.get('description'):
-            self.logger.info(f"说明: {step['description']}")
-            
+            self.logger.info(f"  说明: {step['description']}")
+        
+        # 执行步骤
         self.executor.execute_step(step, self.config.env, variables)
+        
+        # 步骤完成提示
+        self.logger.info(f"✓✓ 完成步骤: {step['name']}\n{'-'*40}")
         
     def _show_completion_message(self, variables: Dict[str, str]):
         """显示安装完成信息"""

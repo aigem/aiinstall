@@ -19,31 +19,38 @@ class CommandExecutor:
         self.logger = logging.getLogger('command')
         
     def execute(self, command: str, env: Dict[str, str] = None) -> str:
-        """执行单个命令（支持多行）"""
+        """执行单个命令（支持多行）并实时输出"""
         self.logger.info(f"执行命令: {command}")
         
         try:
-            # 使用子shell执行多行命令
-            result = subprocess.run(
+            process = subprocess.Popen(
                 command,
                 shell=True,
                 cwd=self.working_dir,
                 env=env,
-                text=True,
-                capture_output=True,
-                executable='/bin/bash'  # 明确指定使用bash以支持多行命令
+                executable='/bin/bash',
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True
             )
+
+            # 实时输出并记录日志
+            full_output = []
+            for line in iter(process.stdout.readline, ''):
+                self.logger.info(line.strip())
+                full_output.append(line)
+                print(line, end='')  # 实时打印到控制台
+
+            process.wait()
             
-            if result.returncode != 0:
+            if process.returncode != 0:
                 raise ExecutionError(
-                    f"命令执行失败: {result.stderr}",
+                    f"命令执行失败: {''.join(full_output)}",
                     command,
-                    result.returncode
+                    process.returncode
                 )
                 
-            if result.stdout:
-                self.logger.info(result.stdout)
-            return result.stdout.strip()
+            return ''.join(full_output).strip()
             
         except subprocess.SubprocessError as e:
             raise ExecutionError(f"命令执行异常: {str(e)}", command)

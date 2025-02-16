@@ -17,6 +17,10 @@ install:
       app_repo: "https://openi.pcl.ac.cn/niubi/ComfyUI.git"
       python_ver: "3.12.9"
       repo_name: "ComfyUI"
+      custom_node_1: "comfyui-manager"
+      custom_node_1_repo: "https://openi.pcl.ac.cn/niubi/comfyui-manager.git"
+      app_log: "{base_dir}/comfyui.log"
+      start_script: "{base_dir}/启动说明.txt"
   steps:
     - name: "安装前准备"
       description: "系统依赖"
@@ -64,3 +68,42 @@ install:
             "numpy<2.0" \
             -i {pip_index} && \
           uv pip install -r {base_dir}/{repo_name}/requirements.txt -i {pip_index}
+
+    - name: "安装自定义插件"
+      description: "安装额外功能模块"
+      common:
+        - |
+          . {base_dir}/{venv_dir}/bin/activate && \
+          cd {base_dir}/{repo_name}/custom_nodes && \
+          if [ -d "{custom_node_1}" ]; then
+            echo "更新插件仓库..." && \
+            cd {custom_node_1} && \
+            git pull
+          else
+            echo "克隆插件仓库..." && \
+            git clone {custom_node_1_repo} {custom_node_1} && \
+            cd {custom_node_1}
+          fi && \
+          uv pip install -r requirements.txt -i {pip_index}
+
+    - name: "生成说明文件"
+      description: "创建启动/停止指南"
+      common:
+        - |
+          cat << EOF > {start_script}
+          ========== ComfyUI 使用说明 ==========
+          启动命令：
+          cd {base_dir}
+          . {venv_dir}/bin/activate
+          cd {repo_name}
+          export HF_ENDPOINT=https://hf-mirror.com
+          nohup python main.py > {app_log} 2>&1 &
+          
+          停止命令：
+          pkill -f "python main.py"
+          
+          日志查看：
+          tail -f {app_log}
+          EOF
+
+        - "chmod 644 {start_script}"
