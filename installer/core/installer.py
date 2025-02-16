@@ -5,6 +5,7 @@ from typing import Dict, Any
 from pathlib import Path
 from .config import Config
 from .executor import CommandExecutor, ExecutionError
+import textwrap
 
 class InstallError(Exception):
     """安装错误"""
@@ -19,6 +20,24 @@ class Installer:
         
     def install(self):
         """执行安装流程"""
+        # 显示安装前提示
+        print("\033[1;36m" + "="*50 + "\033[0m")
+        print("\033[1;32m📢 安装前重要提示\033[0m")
+        print("\033[1;36m" + "-"*50 + "\033[0m")
+        print(textwrap.dedent("""
+        \033[33m1. 请配合视频教程使用本安装程序
+        https://www.bilibili.com/video/BV13UBRYVEmX/
+        2. 安装过程中如无报错，耐心等待直到安装完成\033[0m
+        """))
+        print("\033[1;36m" + "="*50 + "\033[0m")
+        
+        # 等待用户确认
+        confirm = input("\033[1;31m是否开始安装？(Y/n) \033[0m").strip().lower()
+        if confirm not in ('y', ''):
+            print("\033[33m安装已取消\033[0m")
+            return
+
+        # 原有安装流程
         self.logger.info(f"开始安装 {self.config.name}")
         self.logger.info(f"环境: {self.config.env}")
         
@@ -74,11 +93,24 @@ class Installer:
         
     def _show_completion_message(self, variables: Dict[str, str]):
         """显示安装完成信息"""
-        if 'startup' in self.config.data:
-            startup = self.config.data['startup']
-            if 'post_install_message' in startup:
-                message = startup['post_install_message']
-                # 替换变量
-                for key, value in variables.items():
-                    message = message.replace(f"{{{key}}}", str(value))
-                print("\n" + message) 
+        try:
+            # 清屏操作
+            print("\033c", end="")  # ANSI 转义码清屏，兼容更多终端
+            
+            msg = f"""           
+            \033[33m使用说明文件：\033[0m
+            {variables.get('base_dir', '')}/{variables.get('repo_name', '')}使用说明.txt
+            
+            \033[33m最新使用说明请访问：\033[0m
+            \033[4;34m{variables.get('info_url', '请查看说明文件获取访问方式')}\033[0m
+            """
+            print("\033[1;36m" + "="*50 + "\033[0m")
+            print("\033[1;32m📢 安装完成！✅\033[0m")
+            print("\033[1;36m" + "-"*50 + "\033[0m")
+            print(textwrap.dedent(msg))
+            print("\033[1;36m" + "="*50 + "\033[0m")
+            
+        except Exception as e:
+            self.logger.error(f"生成完成提示失败: {str(e)}") 
+        
+        

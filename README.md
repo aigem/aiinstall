@@ -1,14 +1,14 @@
 # AI 应用一键安装系统
 
-一个为 AI 应用量身定制的 Linux 环境安装解决方案，通过 YAML 配置文件实现一键式自动化部署。本系统支持在不同的 Linux 环境（如不同版本的 Ubuntu）下安装 AI 应用，主要处理不同环境下的路径差异和权限需求。
+一个为 AI 应用量身定制的 Linux 环境安装解决方案，通过 YAML 配置文件实现一键式自动化部署。本系统支持在不同的 Linux 环境（包括 Ubuntu、CentOS 等）下安装 AI 应用，主要处理不同环境下的路径差异和权限需求。
 
 ## 特性
 
 - 🔧 **配置驱动**: 通过 YAML 配置文件定义安装流程，无需编写脚本
-- 🐧 **Linux 环境支持**: 预设多个 Ubuntu 环境配置，处理路径和权限差异
-- 📦 **模块化安装**: 标准化的四阶段安装流程，确保安装过程可控
+- 🐧 **多环境支持**: 支持 Ubuntu、CentOS、Alpine 等主流 Linux 发行版
+- 📦 **模块化安装**: 标准化的安装流程步骤控制
 - 📝 **详细日志**: 完整的日志记录，包括命令执行和安装过程
-- ⚡ **简单易用**: 简洁的命令行接口，支持配置验证和变量覆盖
+- ⚡ **环境自检**: 自动检测并安装 Python 运行环境
 
 ## 安装
 
@@ -149,9 +149,9 @@ steps:
   - name: "prepare"
     description: "准备环境"
     common:
-      - "cd {base_dir}"
-      - "{python_cmd} -m venv venv"
-      - "venv/bin/pip install --upgrade pip -i {pip_index}"
+      - "uv venv {venv_dir} --python={python_ver}"
+      - ". {venv_dir}/bin/activate"
+      - "uv pip install --upgrade pip -i {pip_index}"
 ```
 
 ### 环境变量
@@ -165,6 +165,10 @@ steps:
 | {pip_index} | pip镜像源 | "https://pypi.org/simple" |
 | {pip_timeout} | pip超时时间 | 60 |
 | {pip_retries} | pip重试次数 | 3 |
+| {venv_dir} | 虚拟环境目录 | "venv_confyui" |
+| {python_ver} | Python 版本 | "3.12.9" |
+| {app_repo} | 应用仓库地址 | "https://openi.pcl.ac.cn/niubi/ComfyUI.git" |
+| {repo_name} | 仓库目录名 | "ComfyUI" |
 
 ### 自定义安装
 
@@ -178,8 +182,8 @@ python -m installer install comfyui --env ubuntu-a --set base_dir=/custom/path
 安装过程的日志文件位于 `logs` 目录：
 
 - `{app_name}_install.log`: 安装过程日志
-- `{app_name}_commands.log`: 命令执行日志
-- `{app_name}_installer.log`: 安装器详细日志
+- `{app_name}_commands.log`: 所有执行命令的详细日志
+- `{app_name}_installer.log`: 安装器运行日志
 
 ## 错误处理
 

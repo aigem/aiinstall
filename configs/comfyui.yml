@@ -19,8 +19,8 @@ install:
       repo_name: "ComfyUI"
       custom_node_1: "comfyui-manager"
       custom_node_1_repo: "https://openi.pcl.ac.cn/niubi/comfyui-manager.git"
-      app_log: "{base_dir}/comfyui.log"
-      start_script: "{base_dir}/启动说明.txt"
+      info_url: "https://fuliai-ai2u.hf.space/"
+      
   steps:
     - name: "安装前准备"
       description: "系统依赖"
@@ -86,24 +86,43 @@ install:
           fi && \
           uv pip install -r requirements.txt -i {pip_index}
 
-    - name: "生成说明文件"
-      description: "创建启动/停止指南"
+    - name: "生成相关文件并进行提示"
+      description: "创建详细指南"
       common:
         - |
-          cat << EOF > {start_script}
-          ========== ComfyUI 使用说明 ==========
-          启动命令：
-          cd {base_dir}
-          . {venv_dir}/bin/activate
-          cd {repo_name}
+          mkdir -p {base_dir} && \
+          cat << EOF > {base_dir}/{repo_name}使用说明.txt
+          ========== {repo_name} 使用说明 ==========
+          启动 {repo_name} 命令：
+          （在终端中输入并运行）
+          source {base_dir}/{venv_dir}/bin/activate
           export HF_ENDPOINT=https://hf-mirror.com
-          nohup python main.py > {app_log} 2>&1 &
+          python {base_dir}/{repo_name}/main.py
           
-          停止命令：
+          停止 {repo_name} 命令：
+          直接 ctrl+c 停止,或者
+          （在终端中输入并运行）
           pkill -f "python main.py"
+
+          查看最新的命令：
+          请查看 https://fuliai-ai2u.hf.space/
+
+          查看最新的相关说明：
+          请查看 https://fuliai-ai2u.hf.space/
+          加群交流：https://qr61.cn/oohivs/qRp62U6
+
+          如果需要更新，请重新运行一键安装命令，就会更新comfyui
+          如果需要手动安装自定义插件，请在虚拟环境中运行：
+          cd {base_dir}/{repo_name}/custom_nodes
+          git clone 插件仓库地址
+          cd 插件名称
+          #启动虚拟环境
+          . {base_dir}/{venv_dir}/bin/activate
+          #安装插件依赖
+          uv pip install -r requirements.txt -i {pip_index}
           
-          日志查看：
-          tail -f {app_log}
+          安装日志查看：
+          请查看 {base_dir}/aiinstall/logs/ 中的各安装日志
           EOF
 
-        - "chmod 644 {start_script}"
+        - "chmod 644 {base_dir}/{repo_name}使用说明.txt"
