@@ -20,7 +20,7 @@ install:
       custom_node_1: "comfyui-manager"
       custom_node_1_repo: "https://openi.pcl.ac.cn/niubi/comfyui-manager.git"
       info_url: "https://fuliai-ai2u.hf.space/"
-      
+      ksa_repo: "https://gitee.com/fuliai/ai2u.git"
   steps:
     - name: "安装前准备"
       description: "系统依赖"
@@ -86,8 +86,39 @@ install:
           fi && \
           uv pip install -r requirements.txt -i {pip_index}
 
+    - name: "部署KSA内网穿透"
+      description: "一键安装并运行KSA"
+      common:
+        - |
+          # 下载和解压
+          mkdir -p {base_dir}/ksa && \
+          if [ -d "ai2u" ]; then
+            echo "更新仓库..." && \
+            cd ai2u && \
+            git pull
+          else
+            echo "克隆仓库..." && \
+            git clone {ksa_repo} && \
+            cd ai2u
+          fi
+          unzip -o ksa.zip -d {base_dir}/ && \
+          chmod +x {base_dir}/ksa/ksa_x64
+
+          # 清理旧文件并运行
+          rm -f {base_dir}/ksa_ID_Token.txt && \
+          echo "正在启动 KSA..." && \
+          {base_dir}/ksa/ksa_x64 > {base_dir}/ksa_ID_Token.txt 2>&1
+
+          # 检查文件内容是否有指定内容：“KSA ID”，来确定是否运行成功
+          if grep -q "KSA ID" {base_dir}/ksa_ID_Token.txt; then
+            echo "KSA 运行成功"
+          else
+            echo "KSA 运行失败"
+            {base_dir}/ksa/ksa_x64 > {base_dir}/ksa_ID_Token.txt 2>&1
+          fi
+
     - name: "生成相关文件并进行提示"
-      description: "创建详细指南"
+      description: "创建详细指南" 
       common:
         - |
           mkdir -p {base_dir} && \
@@ -95,9 +126,14 @@ install:
           ========== {repo_name} 使用说明 ==========
           启动 {repo_name} 命令：
           （在终端中输入并运行）
+          cd {base_dir}/ksa/ && ./ksa_x64
           source {base_dir}/{venv_dir}/bin/activate
           export HF_ENDPOINT=https://hf-mirror.com
           python {base_dir}/{repo_name}/main.py
+          
+          启动后，使用ksa客户端连接，账号密码在{base_dir}/ksa_ID_Token.txt 中。
+          连接成功后请在浏览器中访问：
+          http://10.0.0.1:8188
           
           停止 {repo_name} 命令：
           直接 ctrl+c 停止,或者
@@ -107,6 +143,9 @@ install:
           查看最新的命令：
           请查看 https://fuliai-ai2u.hf.space/
 
+          内网穿透：
+          请查看视频教程来了解如何使用：https://www.bilibili.com/video/BV1VENaeUEDf/
+          
           查看最新的相关说明：
           请查看 https://fuliai-ai2u.hf.space/
           加群交流：https://qr61.cn/oohivs/qRp62U6
@@ -126,3 +165,4 @@ install:
           EOF
 
         - "chmod 644 {base_dir}/{repo_name}使用说明.txt"
+        
