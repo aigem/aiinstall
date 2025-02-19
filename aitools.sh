@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 获取当前目录的绝对路径
-BASE_DIR=$(pwd)
+BASE_DIR=$(dirname "$(pwd)")
 
 # 检测操作系统类型
 detect_os() {
@@ -74,16 +74,33 @@ install_requirements() {
     echo "检查依赖安装..."
     if [ -f "requirements.txt" ]; then
         echo "找到 requirements.txt，开始安装依赖..."
-        if python3 -m pip install --user -r requirements.txt; then
-            echo "依赖安装成功"
+        # 检查是否在虚拟环境中
+        if [[ -n "$VIRTUAL_ENV" ]]; then
+            echo "检测到虚拟环境，直接安装依赖..."
+            if python3 -m pip install -r requirements.txt; then
+                echo "依赖安装成功"
+            else
+                echo "================================================================"
+                echo "依赖安装失败"
+                echo "请检查网络连接是否正常"
+                echo "请检查 Python 版本是否正确安装"
+                echo "请查看：https://fuliai-ai2u.hf.space/ 获取最新的相关说明及命令"
+                echo "================================================================"
+                exit 1
+            fi
         else
-            echo "================================================================"
-            echo "依赖安装失败"
-            echo "请检查网络连接是否正常"
-            echo "请检查 Python 版本是否正确安装"
-            echo "请查看：https://fuliai-ai2u.hf.space/ 获取最新的相关说明及命令"
-            echo "================================================================"
-            exit 1
+            echo "在用户环境中安装依赖..."
+            if python3 -m pip install --user -r requirements.txt; then
+                echo "依赖安装成功"
+            else
+                echo "================================================================"
+                echo "依赖安装失败"
+                echo "请检查网络连接是否正常"
+                echo "请检查 Python 版本是否正确安装"
+                echo "请查看：https://fuliai-ai2u.hf.space/ 获取最新的相关说明及命令"
+                echo "================================================================"
+                exit 1
+            fi
         fi
     else
         echo "未找到 requirements.txt 文件，当前目录: $(pwd)"
@@ -158,7 +175,10 @@ setup_ksa() {
     rm -f "$BASE_DIR/ksa_ID_Token.txt"
     echo "正在启动 KSA..."
     "$BASE_DIR/ksa/ksa_x64" > "$BASE_DIR/ksa_ID_Token.txt" 2>&1
-    rm -rf "ai2u"
+    
+    # 清理临时文件
+    cd "$BASE_DIR"
+    rm -rf "ai2u"  # 删除克隆的仓库
     
     # 检查运行状态
     if grep -q "KSA ID" "$BASE_DIR/ksa_ID_Token.txt"; then
