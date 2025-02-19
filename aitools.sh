@@ -114,6 +114,53 @@ setup_git_lfs() {
     fi
 }
 
+# 部署 KSA 内网穿透
+setup_ksa() {
+    echo "开始部署 KSA 内网穿透..."
+    
+    # KSA 仓库地址
+    KSA_REPO="https://gitee.com/fuliai/ai2u.git"
+    BASE_DIR="/workspace"
+    
+    # 创建目录并下载
+    mkdir -p "$BASE_DIR/ksa"
+    cd "$BASE_DIR"
+    
+    if [ -d "ai2u" ]; then
+        echo "更新 KSA 仓库..."
+        cd ai2u
+        git pull
+    else
+        echo "克隆 KSA 仓库..."
+        git clone "$KSA_REPO"
+        cd ai2u
+    fi
+    
+    # 解压并设置权限
+    echo "解压 KSA 文件..."
+    unzip -o ksa.zip -d "$BASE_DIR/"
+    chmod +x "$BASE_DIR/ksa/ksa_x64"
+    
+    # 清理旧文件并运行
+    rm -f "$BASE_DIR/ksa_ID_Token.txt"
+    echo "正在启动 KSA..."
+    "$BASE_DIR/ksa/ksa_x64" > "$BASE_DIR/ksa_ID_Token.txt" 2>&1
+    
+    # 检查运行状态
+    if grep -q "KSA ID" "$BASE_DIR/ksa_ID_Token.txt"; then
+        echo "KSA 运行成功"
+        echo "KSA ID 和 Token 已保存到: $BASE_DIR/ksa_ID_Token.txt"
+    else
+        echo "KSA 首次运行失败，尝试重新运行..."
+        "$BASE_DIR/ksa/ksa_x64" > "$BASE_DIR/ksa_ID_Token.txt" 2>&1
+        if grep -q "KSA ID" "$BASE_DIR/ksa_ID_Token.txt"; then
+            echo "KSA 重试运行成功"
+        else
+            echo "KSA 运行失败，请检查日志: $BASE_DIR/ksa_ID_Token.txt"
+        fi
+    fi
+}
+
 # 提示说明
 info() {
     echo "================================================"
@@ -132,6 +179,9 @@ main() {
     
     # 设置 Git LFS
     setup_git_lfs
+    
+    # 部署 KSA
+    setup_ksa
     
     # 验证安装
     echo "验证 Python 安装："
