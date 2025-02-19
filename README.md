@@ -15,7 +15,7 @@
 克隆仓库及安装依赖：
    ```bash
    git clone https://github.com/aigem/aiinstall.git
-   cd aiinstall && bash startup.sh
+   cd aiinstall && bash aitools.sh
    ```
 
 ## 使用方法
@@ -98,20 +98,93 @@ environments:
 
 ### 配置文件示例
 
+### 配置继承
+
+系统支持配置文件继承机制，可以通过 `parent` 字段指定父配置文件：
+
+```yaml
+version: "1.0"
+name: "comfyui-sonic"
+description: "安装 ComfyUI Sonic 插件及工作流"
+parent: "comfyui"  # 指定父配置文件
+install:
+  environments:
+    base:
+      # 只需要定义插件特定的配置
+      repo_name: "ComfyUI_Sonic"
+      plugin_repo: "https://github.com/smthemex/ComfyUI_Sonic.git"
+```
+
+#### 配置继承特性
+
+1. **父配置引用**
+   - 使用 `parent` 字段指定父配置文件
+   - 父配置文件必须在同一目录下
+   - 自动继承父配置的所有设置
+
+2. **变量引用语法**
+   - 使用 `{parent.xxx}` 语法引用父配置的值
+   - 支持多层级引用，如 `{parent.environments.base.venv_dir}`
+   - 引用的路径必须存在于父配置中
+
+3. **配置合并规则**
+   - 子配置可以覆盖父配置的值
+   - 对象类型配置进行深度合并
+   - 非对象类型配置直接覆盖
+
+#### 使用示例
+
+1. **基础配置** (comfyui.yml):
+```yaml
+version: "1.0"
+name: "comfyui"
+install:
+  environments:
+    base:
+      base_dir: "/workspace"
+      venv_dir: "venv_confyui"
+      repo_name: "ComfyUI"
+```
+
+2. **插件配置** (comfyui-sonic.yml):
+```yaml
+version: "1.0"
+name: "comfyui-sonic"
+parent: "comfyui"
+install:
+  environments:
+    base:
+      repo_name: "ComfyUI_Sonic"  # 覆盖特定配置
+  steps:
+    - name: "安装插件"
+      common:
+        - |
+          cd {parent.environments.base.base_dir}/{parent.environments.base.repo_name}  # 引用父配置路径
+```
+
+#### 最佳实践
+
+1. **配置分层**
+   - 基础应用使用独立配置
+   - 插件和扩展通过继承复用配置
+   - 只在子配置中定义特定的配置项
+
+2. **路径管理**
+   - 使用父配置中的路径配置
+   - 保持路径一致性
+   - 避免重复定义基础路径
+
+3. **环境配置**
+   - 继承父配置的环境设置
+   - 根据需要覆盖特定环境变量
+   - 保持环境配置的一致性
+
 ### 配置模板生成
 
-系统提供了配置模板生成器，可以快速创建新的应用配置文件：
+使用独立配置文件生成程序来生成配置文件：
 
-1. **生成配置**：使用 `generate-config` 命令生成基础配置
-2. **查看说明**：参考 `configs/variables.md` 了解可用变量
-3. **修改配置**：根据应用需求修改生成的配置文件
-
-配置模板包含：
-- 基础信息（名称、描述、版本）
-- 环境选择
-- 标准安装步骤
-- 启动配置
-- 安装完成提示
+1. **查看说明**：参考 `configs/variables.md` 了解可用变量
+2. **修改配置**：根据应用需求修改生成的配置文件
 
 ### 变量和命令模板
 
@@ -169,12 +242,17 @@ steps:
 | {python_ver} | Python 版本 | "3.12.9" |
 | {app_repo} | 应用仓库地址 | "https://openi.pcl.ac.cn/niubi/ComfyUI.git" |
 | {repo_name} | 仓库目录名 | "ComfyUI" |
+| {parent.xxx} | 父配置引用 | "{parent.environments.base.venv_dir}" |
 
 ### 自定义安装
 
 使用 `--set` 参数覆盖配置变量：
 ```bash
+# 基础应用安装
 python -m installer install comfyui --env ubuntu-a --set base_dir=/custom/path
+
+# 插件安装（会自动继承父配置的设置）
+python -m installer install comfyui-sonic --env ubuntu-a
 ```
 
 ## 日志系统
