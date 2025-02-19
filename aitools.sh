@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# 获取当前目录的绝对路径
+BASE_DIR=$(pwd)
+
 # 检测操作系统类型
 detect_os() {
     if [ -f /etc/os-release ]; then
@@ -127,7 +130,7 @@ setup_ksa() {
     
     # KSA 仓库地址
     KSA_REPO="https://gitee.com/fuliai/ai2u.git"
-    BASE_DIR="/workspace"
+    
     
     # 保存当前目录
     CURRENT_DIR=$(pwd)
@@ -155,7 +158,7 @@ setup_ksa() {
     rm -f "$BASE_DIR/ksa_ID_Token.txt"
     echo "正在启动 KSA..."
     "$BASE_DIR/ksa/ksa_x64" > "$BASE_DIR/ksa_ID_Token.txt" 2>&1
-    rm -rf "$BASE_DIR/ai2u"
+    rm -rf "ai2u"
     
     # 检查运行状态
     if grep -q "KSA ID" "$BASE_DIR/ksa_ID_Token.txt"; then
@@ -204,7 +207,11 @@ main() {
     setup_ksa
     
     # 验证安装
-    echo "验证 Python 安装："
+    echo "验证安装环境："
+    echo "工作目录："
+    echo "$BASE_DIR"
+    echo ""
+    echo "Python 环境："
     echo "python3 版本："
     python3 --version
     echo "python 版本："
