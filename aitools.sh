@@ -74,11 +74,18 @@ install_requirements() {
         if python3 -m pip install --user -r requirements.txt; then
             echo "依赖安装成功"
         else
+            echo "================================================================"
             echo "依赖安装失败"
+            echo "请检查网络连接是否正常"
+            echo "请检查 Python 版本是否正确安装"
+            echo "请查看：https://fuliai-ai2u.hf.space/ 获取最新的相关说明及命令"
+            echo "================================================================"
             exit 1
         fi
     else
-        echo "未找到 requirements.txt 文件"
+        echo "未找到 requirements.txt 文件，当前目录: $(pwd)"
+        ls -la
+        exit 1
     fi
 }
 
@@ -122,6 +129,9 @@ setup_ksa() {
     KSA_REPO="https://gitee.com/fuliai/ai2u.git"
     BASE_DIR="/workspace"
     
+    # 保存当前目录
+    CURRENT_DIR=$(pwd)
+    
     # 创建目录并下载
     mkdir -p "$BASE_DIR/ksa"
     cd "$BASE_DIR"
@@ -145,6 +155,7 @@ setup_ksa() {
     rm -f "$BASE_DIR/ksa_ID_Token.txt"
     echo "正在启动 KSA..."
     "$BASE_DIR/ksa/ksa_x64" > "$BASE_DIR/ksa_ID_Token.txt" 2>&1
+    rm -rf "$BASE_DIR/ai2u"
     
     # 检查运行状态
     if grep -q "KSA ID" "$BASE_DIR/ksa_ID_Token.txt"; then
@@ -159,13 +170,19 @@ setup_ksa() {
             echo "KSA 运行失败，请检查日志: $BASE_DIR/ksa_ID_Token.txt"
         fi
     fi
+    
+    # 返回原始目录
+    cd "$CURRENT_DIR"
 }
 
 # 提示说明
 info() {
     echo "================================================"
-    echo "请查看【说明文件】进行下一步的安装"
-    echo " 或查看：https://fuliai-ai2u.hf.space/ 获取最新的相关说明及命令"
+    echo ""
+    echo "     请查看【说明文件】进行下一步的安装"
+    echo "     或查看：https://fuliai-ai2u.hf.space/"
+    echo "     获取最新的相关说明及命令"
+    echo ""
     echo "================================================"
 }
 
@@ -176,6 +193,9 @@ main() {
     
     # 设置 Python 软链接
     setup_python_links
+    
+    # 安装依赖
+    install_requirements
     
     # 设置 Git LFS
     setup_git_lfs
@@ -195,9 +215,6 @@ main() {
     pip --version
     echo "Git LFS 版本："
     git lfs version
-
-    # 安装依赖
-    install_requirements
     
     # 显示信息
     info

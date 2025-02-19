@@ -14,87 +14,36 @@
 
 克隆仓库及安装依赖：
    ```bash
-   git clone https://github.com/aigem/aiinstall.git
-   cd aiinstall && bash aitools.sh
+   git clone https://cnb.cool/fuliai/aitools.git
+   cd aitools && bash aitools.sh
    ```
+
+将获取到的配置文件复制到 aitools/configs 目录下，然后使用以下命令安装：
+
 
 ## 使用方法
 
 ### 基本命令
+1. 使用预设环境安装应用：
 
-1. 查看帮助：
-   ```bash
-   python -m installer --help
-   ```
-
-2. 使用预设环境安装应用：
 查找 configs 目录下的配置文件，使用预设环境安装应用：
    ```bash
-   # 安装comfyui 使用ubuntu-a环境
-   python -m installer install comfyui --env ubuntu-a
+   # 安装comfyui 使用base环境
+   python -m installer install comfyui --env base
 
    ```
 
-3. 使用自定义配置文件：
+2. 使用自定义配置文件：
    ```bash
    # 安装指定配置文件 使用github环境
    python -m installer install --config configs/demo.yml -e github
    ```
 
-4. 验证配置文件：
+3.安装comfyui插件：
+安装comfyui-sonic 使用base环境
    ```bash
-   python -m installer validate my_config.yml
+   python -m installer install comfyui-sonic --env base
    ```
-
-5. 生成应用配置模板：
-   ```bash
-   # 基本用法
-   python -m installer generate-config myapp
-
-   # 完整参数
-   python -m installer generate-config comfyui \
-       --description "应用描述" \
-       --repo-url "https://github.com/user/repo.git" \
-       --version "latest" \
-       --port 8188 \
-       --docs-url "https://docs.example.com"
-   ```
-
-### 环境配置
-
-环境配置集中在 `configs/environments.yml` 文件中：
-
-```yaml
-# 预设环境配置
-environments:
-  # 基础环境配置
-  base: &env-base
-    python_cmd: "python3"
-    pip_index: "https://pypi.org/simple"
-    pip_timeout: 60
-    pip_retries: 3
-
-  # 非sudo环境
-  ubuntu-a: &ubuntu-a
-    <<: *env-base
-    base_dir: "/home/{user}/ai_apps/{name}"
-    use_sudo: false
-    env_vars:
-      PYTHONPATH: "{base_dir}/src"
-
-  # sudo环境
-  ubuntu-b: &ubuntu-b
-    <<: *env-base
-    base_dir: "/opt/ai/{name}"
-    use_sudo: true
-    env_vars:
-      PYTHONPATH: "{base_dir}/src"
-
-  # 中国区环境
-  ubuntu-a-cn:
-    <<: *ubuntu-a
-    pip_index: "https://pypi.tuna.tsinghua.edu.cn/simple"
-```
 
 ### 配置文件示例
 

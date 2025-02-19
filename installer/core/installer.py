@@ -67,6 +67,7 @@ class Installer:
             'base_dir': self.config.current_env['base_dir'],
             'python_cmd': self.config.current_env['python_cmd'],
             'use_sudo': str(self.config.current_env['use_sudo']).lower(),
+            'app_name': self.config.name,
         }
         
         # 添加所有环境变量
@@ -97,13 +98,38 @@ class Installer:
             # 清屏操作
             print("\033c", end="")  # ANSI 转义码清屏，兼容更多终端
             
-            msg = f"""           
-            \033[33m使用说明文件：\033[0m
-            {variables.get('base_dir', '')}/{variables.get('repo_name', '')}使用说明.txt
+            # 检查说明文件是否存在
+            manual_path = Path(variables.get('base_dir', '')) / f"{variables.get('repo_name', '')}使用说明.txt"
             
-            \033[33m最新使用说明请访问：\033[0m
-            \033[4;34m{variables.get('info_url', '请查看说明文件获取访问方式')}\033[0m
-            """
+            # 构建提示信息
+            msg_parts = []
+            
+            # 如果说明文件存在，添加说明文件提示
+            if manual_path.exists():
+                msg_parts.append(f"""
+                \033[33m使用说明文件：\033[0m
+                {manual_path}""")
+            
+            # 添加日志路径提示
+            log_path = Path(variables.get('base_dir', '')) / 'aitools/logs'
+            msg_parts.append(f"""
+                \033[33m安装日志位置：\033[0m
+                {log_path}
+                运行以下命令查看详细日志：
+                \033[36mcat {log_path}/{variables.get('app_name', '*')}_install.log\033[0m   # 安装过程日志
+                \033[36mcat {log_path}/{variables.get('app_name', '*')}_commands.log\033[0m  # 命令执行日志
+                \033[36mcat {log_path}/{variables.get('app_name', '*')}_installer.log\033[0m # 安装器日志""")
+            
+            # 添加在线文档链接
+            if variables.get('info_url'):
+                msg_parts.append(f"""
+                \033[33m最新使用说明请访问：\033[0m
+                \033[4;34m{variables.get('info_url')}\033[0m""")
+            
+            # 合并所有提示信息
+            msg = "\n".join(msg_parts)
+            
+            # 显示完成信息
             print("\033[1;36m" + "="*50 + "\033[0m")
             print("\033[1;32m📢 安装完成！✅\033[0m")
             print("\033[1;36m" + "-"*50 + "\033[0m")
